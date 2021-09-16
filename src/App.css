@@ -36,3 +36,37 @@
     transform: rotate(360deg);
   }
 }
+
+.time {
+  font-weight: 500;
+  width: 90px;
+  height: 45px;
+  border-radius: 10px;
+  border: 1px solid gray;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.time.active {
+  border: 2px solid black;
+}
+
+.date {
+  width: 100px;
+  height: 50px;
+}
+
+.date.active {
+  border-radius: 5px;
+  border: 2px solid purple;
+}
+.date.schedule {
+  background-color: gray;
+}
+
+.date-content, .time-content {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 0;
+}
