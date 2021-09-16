@@ -1,25 +1,12 @@
-const bodyParser = require('body-parser');
-var express = require('express');
-const cors = require("cors");
-
 var { generateOffice365Schedule } = require("./utils/schedule")
 var { now } = require("./utils/dateHelper");
 
+var express = require('express');
 var app = express();
 var port = 8080;
 
-app.use(express());
-app.use(cors());
-
-app.use(bodyParser.json());
-app.use(
-  bodyParser.urlencoded({
-    extended: true,
-  })
-);
-
-
 app.get('/availability', function (req, res) {
+    
     // STEP 1 use a mock response and display on the client
     const response = generateMockUpResponse()
 
