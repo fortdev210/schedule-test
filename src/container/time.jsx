@@ -34,6 +34,7 @@ function Time() {
       }
     }
     calcTime()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate])
 
   return (
