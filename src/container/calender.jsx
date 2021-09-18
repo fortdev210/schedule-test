@@ -26,7 +26,6 @@ function Calender() {
   const getDataFromServer = async () => {
     await axios.get('http://localhost:8080/availability')
       .then(function (response) {
-
         timeDate.getDate() < 10 ? today = '0' + timeDate.getDate() : today = timeDate.getDate()
         timeDate.getMonth() + 1 < 10 ? today += '/0' + (timeDate.getMonth() + 1) : today = '/' + (timeDate.getMonth() + 1)
         today += `/${timeDate.getFullYear()}`
