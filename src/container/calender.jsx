@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import { useDispatch } from 'react-redux'
 import axios from 'axios'
 
@@ -10,7 +10,6 @@ import { updateData } from '../redux/schedule/schedule.action'
 let timezone 
 
 function Calender() {
-  const [datas, setData] = useState([])
   const dispatch = useDispatch()
 
   let timeDate = new Date();
@@ -46,10 +45,10 @@ function Calender() {
     <div>
       <p className="timezone">Yor timezone:{timezone}</p>
       <div className="date-content">
-        <DateCont date={datas} />
+        <DateCont />
       </div>
       <div className="time-content">
-        <Time time={datas} />
+        <Time />
       </div>
     </div>
   )

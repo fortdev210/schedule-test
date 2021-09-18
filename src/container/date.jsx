@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react"
-import { useSelector, useDispatch } from 'react-redux'
+import React, { useEffect } from "react"
+import { useSelector } from 'react-redux'
 import DateCom from "../components/date.component"
 
 let weekly = []
+const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const startOfWeek = (date) => {
   let diff = date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1);
@@ -17,18 +18,17 @@ const endOfMonth = (date) => {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 }
 
-function DateCont({ date }) {
-  const [useDate, setDateState] = useState({});
+function DateCont() {
   const { selectedDate, receiveData } = useSelector(state => state.scheduleReducer);
-
 
   const initDate = () => {
     let startWeek = startOfWeek(new Date())
+    let currentDay = (new Date()).getDay() + 1
     let endMonth = endOfMonth(new Date())
     let endWeek = endOfWeek(new Date())
     if (endMonth.getDate() > endWeek.getDate()) {
       for (let index = startWeek.getDate(); index <= endWeek.getDate(); index++) {
-        weekly.push({ date: index + 1, wed: 'wed' })
+        weekly.push({ date: index + 1, day: days[(++currentDay % 7)] })
       }
     } else {
       for (let index = startWeek.getDate(); index <= endMonth.getDate(); index++) {
@@ -39,7 +39,7 @@ function DateCont({ date }) {
 
   useEffect(() => {
     initDate()
-  }, [date])
+  }, [])
 
   return (
     <>
@@ -50,7 +50,7 @@ function DateCont({ date }) {
           state = 'schedule'
         }
 
-        if (Number(selectedDate.split('/')[0]) == data.date) {
+        if (Number(selectedDate.split('/')[0]) === data.date) {
           state = 'active'
         }
 

@@ -4,7 +4,6 @@ import { Provider } from 'react-redux';
 import Calender from './container/calender';
 import { store } from './redux/store';
 
-import logo from './logo.svg';
 import './App.css';
 
 function App() {

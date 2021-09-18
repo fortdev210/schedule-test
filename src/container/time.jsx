@@ -1,6 +1,5 @@
-import { test } from "ramda"
 import React, { useEffect, useState } from "react"
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import TimeCom from "../components/time.component"
 
@@ -13,28 +12,29 @@ function Time() {
   const [timeObj, setTimeState] = useState(null)
   const { receiveData, selectedDate } = useSelector(state => state.scheduleReducer)
 
-  const calcTime = () => {
-    let datas = receiveData.filter(data => data.date === selectedDate)
-    initTime = {}
-    for (let index = startTime; index <= endTime; index++) {
-      initTime[`${index}:00`] = false
-    }
-    if (datas.length) {
-      datas[0].availableSlots.map((data) => {
-        let buffer = initTime || {}
-        for (let index = Number(data.startTime.split(":")[0]); index <= Number(data.endTime.split(":")[0]); index++) {
-          buffer[`${index}:00`] = true
-        }
-        setTimeState({ ...buffer })
-      })
-    } else {
-      setTimeState({ ...initTime })
-    }
-  }
-
+  
   useEffect(() => {
+    const calcTime = () => {
+      let datas = receiveData.filter(data => data.date === selectedDate)
+      initTime = {}
+      for (let index = startTime; index <= endTime; index++) {
+        initTime[`${index}:00`] = false
+      }
+      if (datas.length) {
+        datas[0].availableSlots.map((data) => {
+          let buffer = initTime || {}
+          for (let index = Number(data.startTime.split(":")[0]); index <= Number(data.endTime.split(":")[0]); index++) {
+            buffer[`${index}:00`] = true
+          }
+          setTimeState({ ...buffer })
+          return data
+        })
+      } else {
+        setTimeState({ ...initTime })
+      }
+    }
     calcTime()
-  }, [receiveData, selectedDate])
+  }, [selectedDate])
 
   return (
     <>
