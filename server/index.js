@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser');
 var express = require('express');
 const cors = require("cors");
+var moment = require('moment')
 
 var { generateOffice365Schedule } = require("./utils/schedule")
 var { now } = require("./utils/dateHelper");
@@ -21,10 +22,12 @@ app.use(
 
 app.get('/availability', function (req, res) {
     // STEP 1 use a mock response and display on the client
-    const response = generateMockUpResponse()
+    // const response = generateMockUpResponse()
 
     // STEP 2 generate real data and convert to expected format
-    // const data = generateOffice365Schedule(startDate, endDate)
+    var startDate = moment(req.query.startDate, 'YYYY-M-DD HH:mm:ss')
+    var endDate = moment(req.query.endDate, 'YYYY-M-DD HH:mm:ss')
+    const response = generateOffice365Schedule(startDate, endDate)
     return res.send(response);
 });
 

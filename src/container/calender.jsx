@@ -13,7 +13,6 @@ function Calender() {
   const dispatch = useDispatch()
 
   let timeDate = new Date();
-  let today;
 
   const getTimeZone = () => {
     timezone = timeDate.toString().split(" ")[5]
@@ -23,7 +22,10 @@ function Calender() {
   getTimeZone()
 
   const getDataFromServer = async () => {
-    await axios.get('http://localhost:8080/availability')
+    let today = new Date();
+    let fiveDaysLater = new Date();
+    fiveDaysLater.setDate(today.getDate()+5);
+    await axios.get('http://localhost:8080/availability', { params: { startDate: today, endDate: fiveDaysLater } })
       .then(function (response) {
         timeDate.getDate() < 10 ? today = '0' + timeDate.getDate() : today = timeDate.getDate()
         timeDate.getMonth() + 1 < 10 ? today += '/0' + (timeDate.getMonth() + 1) : today = '/' + (timeDate.getMonth() + 1)

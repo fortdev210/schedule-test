@@ -1,9 +1,10 @@
 const { Settings, DateTime } = require("luxon");
+var moment = require('moment')
 
 Settings.defaultZoneName = "utc";
 
 const diffDates = (startDate, endDate) =>
-  endDate.diff(startDate, ["days", "hours"]);
+  endDate.diff(startDate)
 
 exports.isSameDayMonthYear = (d1, d2) => {
   return (
@@ -15,8 +16,8 @@ exports.now = () => DateTime.utc();
 
 exports.durationInDays = (startDate, endDate) => {
   const duration = diffDates(startDate, endDate);
-
-  const days = Math.ceil(duration.as("days"));
+  
+  const days = Math.ceil(moment.duration(duration).asDays());
 
   if (days == 1 && startDate.day === endDate.day) {
     return 0;
@@ -28,10 +29,10 @@ exports.durationInDays = (startDate, endDate) => {
 exports.durationInHours = (startDate, endDate) => {
   const duration = diffDates(startDate, endDate);
 
-  return Math.ceil(duration.as("hours"));
+  return Math.ceil(moment.duration(duration).asHours());
 };
 
-exports.formatDateToYearMonthDay = date => date.toISODate();
-exports.fromISOString = DateTime.fromISO;
+exports.formatDateToYearMonthDay = date => date.format("DD/MM/YYYY");
+exports.fromISOString = date => date.toISOString();
 
 

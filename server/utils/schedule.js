@@ -5,11 +5,12 @@ var {
   formatDateToYearMonthDay,
   fromISOString
 } = require("./dateHelper");
+var moment = require('moment')
 
 var r = require("ramda");
 
-const workingStartTime = "08:00:00.0000000";
-const workingEndTime = "17:00:00.0000000";
+const workingStartTime = "08:00";
+const workingEndTime = "17:00";
 
 const workingDays = {
   1: "monday",
@@ -19,10 +20,10 @@ const workingDays = {
   5: "friday"
 };
 
-const firstDayEventStart = "09:00:00.0000000";
-const firstDayEventEnd = "10:30:00.0000000";
-const secondDayEventStart = "11:00:00.0000000";
-const secondDayEventEnd = "13:00:00.0000000";
+const firstDayEventStart = "09:00";
+const firstDayEventEnd = "21:30";
+const secondDayEventStart = "1:00";
+const secondDayEventEnd = "13:00";
 
 const generateEventForDateStringsAndStatus = (
   startDateString,
@@ -40,101 +41,89 @@ const generateEventForDateStringsAndStatus = (
   }
 });
 
-const generateEventsForDateString = dateString => [
+const generateEventsForDateString = dateString => {
+  return [
   generateEventForDateStringsAndStatus(
-    dateString + "T" + firstDayEventStart,
-    dateString + "T" + firstDayEventEnd,
+    moment(dateString + ' ' + firstDayEventStart, 'DD/MM/YYYY HH:mm'),
+    moment(dateString + ' ' + firstDayEventEnd, 'DD/MM/YYYY HH:mm'),
     "Tentative"
   ),
   generateEventForDateStringsAndStatus(
-    dateString + "T" + secondDayEventStart,
-    dateString + "T" + secondDayEventEnd,
+    moment(dateString + ' ' + secondDayEventStart, 'DD/MM/YYYY HH:mm'),
+    moment(dateString + ' ' + secondDayEventEnd, 'DD/MM/YYYY HH:mm'),
     "Busy"
   )
-];
+];}
 
 const generateEvents = (startDate, endDate) => {
   const days = durationInDays(startDate, endDate);
   const daysVector = r.range(0, days + 1);
+  const fromThisDay = startDate.clone();
 
   const allEvents = r.reduce(
     (acc, day) =>
       r.concat(
         acc,
         generateEventsForDateString(
-          formatDateToYearMonthDay(startDate.plus({ days: day }))
+          formatDateToYearMonthDay(fromThisDay.add(day, 'days'))
         )
       ),
     [],
     daysVector
   );
-
   return r.filter(event => {
-    const eventStartDate = fromISOString(event.start.dateTime);
+    const eventStartDate = fromISOString(moment(event.start.dateTime));
     const eventEndDate = fromISOString(event.end.dateTime);
 
-    return startDate < eventEndDate && endDate >= eventStartDate;
+    return fromISOString(moment(startDate)) < eventEndDate && fromISOString(moment(endDate)) >= eventStartDate;
   }, allEvents);
 };
 
 const generateAvailabilityView = (startDate, endDate, events) => {
   const hours = r.range(0, durationInHours(startDate, endDate));
-
-  return r.join(
-    "",
-    r.map(hour => {
-      const date = startDate.plus({ hours: hour });
+  const availableSlots = []
+  return (r.map(hour => {
+      const date = startDate.add( hour, "hours" );
 
       const collision = r.find(event => {
-        const eventStartDate = fromISOString(event.start.dateTime);
-        const eventEndDate = fromISOString(event.end.dateTime);
-
+        const eventStartDate = moment(event.start.dateTime, moment.ISO_8601);
+        const eventEndDate = moment(event.end.dateTime, moment.ISO_8601);
+        
         return date >= eventStartDate && date < eventEndDate;
       }, events);
 
-      return collision ? 1 : 0;
-    }, hours)
-  );
-};
+      return collision ? {date: date} : 0;
+    }, hours));
+  }
+  
 
 exports.generateOffice365Schedule = (startDate, endDate) => {
   const events = generateEvents(startDate, endDate);
   const availabilityView = generateAvailabilityView(startDate, endDate, events);
-
-  return {
-    "@odata.context":
-      "https://graph.microsoft.com/v1.0/$metadata#Collection(microsoft.graph.scheduleInformation)",
-    value: [
-      {
-        scheduleId: "AlexW@contoso.OnMicrosoft.com",
-        availabilityView: availabilityView,
-        scheduleItems: events,
-        workingHours: {
-          daysOfWeek: r.values(workingDays),
-          startTime: workingStartTime,
-          endTime: workingEndTime,
-          timeZone: {
-            "@odata.type": "#microsoft.graph.customTimeZone",
-            bias: 480,
-            name: "Customized Time Zone",
-            standardOffset: {
-              time: "02:00:00.0000000",
-              dayOccurrence: 1,
-              dayOfWeek: "sunday",
-              month: 11,
-              year: 0
-            },
-            daylightOffset: {
-              daylightBias: -60,
-              time: "02:00:00.0000000",
-              dayOccurrence: 2,
-              dayOfWeek: "sunday",
-              month: 3,
-              year: 0
-            }
-          }
-        }
+  var output = []
+  availabilityView.map(item => {
+    if (item) {
+      return {
+        date: formatDateToYearMonthDay(item.date),
+        availableSlots: [
+          { startTime: item.date.format('HH:mm'), endTime: item.date.add(1, "hours").format('HH:mm') },
+        ]}
+    }
+  }).forEach(function(item) {
+    if (item) {
+      var existing = output.filter(function(v, i) {
+        return v.date == item.date;
+      });
+      if (existing.length) {
+        var existingIndex = output.indexOf(existing[0]);
+        output[existingIndex].availableSlots = output[existingIndex].availableSlots.concat(item.availableSlots);
+      } else {
+        if (typeof item.availableSlots == 'string')
+          item.availableSlots = [item.availableSlots];
+        output.push(item);
       }
-    ]
-  };
+    }
+  });
+
+  return output
 };
